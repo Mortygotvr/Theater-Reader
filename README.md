@@ -7,6 +7,10 @@ An OBS Studio plugin that reads **Twitch, Kick and YouTube** chat and alerts its
 
 It's optional. Theater Scene works the same with the Theater Reader app, or anything else serving the relay. Turned off in its settings, it reads nothing and leaves the port free for another reader.
 
+## Installing a release
+
+Extract the zip into `C:\ProgramData\obs-studio\plugins`, so you get `plugins\theater-reader\bin` and `plugins\theater-reader\data`, then restart OBS (30 or newer).
+
 ## Using it
 
 **🎭 Theater → 📡 Chat & Alerts…** opens its window:
