@@ -1,0 +1,29 @@
+[package]
+name = "theater_reader"
+version = "0.1.0"
+edition = "2024"
+license = "GPL-2.0-or-later"
+
+# Theater Reader as an OBS plugin of its own (deployed as theater-reader.dll):
+# installed or not, Theater Scene listens to whatever serves the relay.
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+theater_shared = { path = "../Theater-Shared" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time", "net"] }
+tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
+# Twitch, Kick and YouTube over https and wss
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "gzip", "json"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+futures-util = "0.3"
+parking_lot = "0.12"
+crossbeam-channel = "0.5"
+base64 = "0.22"
+# The window's icon
+image = { version = "0.25", default-features = false, features = ["png"] }
+egui = "0.31"
+eframe = { version = "0.31", default-features = false, features = ["default_fonts", "glow", "wayland", "x11"] }
+winit = { version = "0.30", default-features = false, features = ["x11", "wayland"] }
