@@ -18,9 +18,21 @@ Copy-Item -LiteralPath $dll "$stage\bin\64bit\theater-reader.dll"
 Copy-Item -LiteralPath $QtShim "$stage\bin\64bit\trust_qt.dll"
 Copy-Item -LiteralPath "$PSScriptRoot\assets\icon.png" "$stage\data\icon.png"
 Copy-Item -LiteralPath "$PSScriptRoot\LICENSE" "$stage\LICENSE.txt"
+# The version, which the Theater Installer reads to offer updates
+Set-Content -LiteralPath "$stage\version.txt" -Value $Version -Encoding ascii
 
 $zip = "$PSScriptRoot\dist\theater-reader-$Version-windows-x64.zip"
 if (Test-Path $zip) { Remove-Item $zip }
-Compress-Archive -Path $stage -DestinationPath $zip
+# Entries named with / between folders, as zip tools expect (in Windows
+# PowerShell, Compress-Archive and ZipFile.CreateFromDirectory put \)
+Add-Type -AssemblyName System.IO.Compression, System.IO.Compression.FileSystem
+$archive = [System.IO.Compression.ZipFile]::Open($zip, [System.IO.Compression.ZipArchiveMode]::Create)
+try {
+    $base = $work.Length + 1
+    foreach ($file in Get-ChildItem -LiteralPath $stage -Recurse -File) {
+        $name = $file.FullName.Substring($base).Replace('\', '/')
+        [void][System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($archive, $file.FullName, $name, [System.IO.Compression.CompressionLevel]::Optimal)
+    }
+} finally { $archive.Dispose() }
 Remove-Item $work -Recurse -Force
 Write-Host "Made $zip"
