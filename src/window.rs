@@ -125,9 +125,15 @@ fn window_ui(ui: &mut egui::Ui) {
             Some(why) => {
                 ui.colored_label(egui::Color32::from_rgb(239, 68, 68), format!("⚠ Relay: {}", why));
             }
-            None if crate::reader::relay::hosting() => {
-                ui.weak(format!("Relay: ws://127.0.0.1:{} · {} app(s) connected", port_saved, crate::reader::relay::clients()));
-            }
+            None if crate::reader::relay::hosting() => match crate::reader::relay::host() {
+                // Another Theater plugin started first (its settings for the port)
+                Some(host) => {
+                    ui.weak(format!("Relay: hosted by {} · Theater Reader's messages go through it", host));
+                }
+                None => {
+                    ui.weak(format!("Relay: ws://127.0.0.1:{} · {} app(s) connected", port_saved, crate::reader::relay::clients()));
+                }
+            },
             None => {}
         }
     }

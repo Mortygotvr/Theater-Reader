@@ -2837,9 +2837,12 @@ version = "0.1.0"
 dependencies = [
  "crossbeam-channel",
  "egui",
+ "futures-util",
  "parking_lot",
  "serde",
  "serde_json",
+ "tokio",
+ "tokio-tungstenite",
 ]
 
 [[package]]

@@ -335,7 +335,7 @@ pub fn restart() {
 
     let mut tasks = TASKS.lock();
     tasks.push(runtime.spawn(pipeline(rx, cfg.clone(), generation)));
-    tasks.push(runtime.spawn(relay::serve(cfg.relay_port, cfg.lan)));
+    relay::start(cfg.relay_port, cfg.lan);
     tasks.push(runtime.spawn(twitch::load_badges()));
     for chat in cfg.chats.iter().filter(|c| c.enabled && !c.input.trim().is_empty()) {
         let sink = Sink { tx: tx.clone(), chat: chat.key(), generation };
@@ -358,7 +358,6 @@ pub fn stop() {
     for task in TASKS.lock().drain(..) {
         task.abort();
     }
-    relay::stopped();
     if was_running {
         crate::obs::emit_reader_event(&serde_json::json!({ "type": "reader_state", "enabled": false }).to_string());
     }
@@ -402,6 +401,11 @@ async fn pipeline(mut rx: UnboundedReceiver<RawEvent>, cfg: ReaderConfig, genera
         if GENERATION.load(Ordering::SeqCst) != generation {
             return;
         }
+        // Theater API · Twitch sends this channel's Twitch alerts itself (with
+        // the real titles and reward ids): not twice
+        if event.platform == Platform::Twitch && !normalize::is_chat(&event.event) && api_twitch_covers(&event.channel) {
+            continue;
+        }
         let chat = cfg.chats.iter().find(|c| c.platform == event.platform && same_channel(&c.input, &event.channel));
         let options = normalize::Options {
             event_on: chat.map(|c| c.event_on(&event.event)).unwrap_or(true),
@@ -413,6 +417,21 @@ async fn pipeline(mut rx: UnboundedReceiver<RawEvent>, cfg: ReaderConfig, genera
             dispatch(&message);
         }
     }
+}
+
+/// The channels Theater API · Twitch sends alerts for, when it's installed
+/// and connected (its theater_api_twitch_channels procedure)
+fn api_twitch_covers(channel: &str) -> bool {
+    let Some(obs) = theater_shared::obs_link::obs() else { return false };
+    let mut cd = theater_shared::obs_link::Calldata::new();
+    if !obs.call(c"theater_api_twitch_channels", &mut cd) {
+        obs.free(&mut cd);
+        return false;
+    }
+    let json = obs.get_string(&cd, c"json");
+    obs.free(&mut cd);
+    let channel = channel.trim().trim_start_matches('#');
+    serde_json::from_str::<Vec<String>>(&json).unwrap_or_default().iter().any(|c| c.eq_ignore_ascii_case(channel))
 }
 
 /// Theater Reader matched the chat of an event loosely (the input, or either
