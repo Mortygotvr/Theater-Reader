@@ -150,13 +150,14 @@ pub fn messages(event: &RawEvent, options: &Options, msg_id: &str, avatar: Optio
             }
             out.push(line);
         } else {
-            out.push(json!({
+            // With the shared alert (theater_shared::alert), for scripts and the Control Panel
+            out.push(theater_shared::alert::with_alert(json!({
                 "type": "alert",
                 "source": event.platform.parser_name(),
                 "event": event.event,
                 "trigger": trigger,
                 "data": data,
-            }));
+            })));
         }
     }
     out.push(json!({
@@ -230,13 +231,13 @@ pub fn test_messages(trigger: &str, user: &str, amount: &str, now: u64) -> Vec<V
             "username": user,
         })
     } else {
-        json!({
+        theater_shared::alert::with_alert(json!({
             "type": "alert",
             "source": "Test UI",
             "event": trigger,
             "trigger": trigger,
             "data": data,
-        })
+        }))
     };
     vec![feed, shown]
 }
@@ -305,6 +306,11 @@ mod tests {
         assert_eq!(out[0]["event"], "Twitch redeem (pubsub)");
         assert_eq!(out[0]["trigger"], "Twitch mortygotvr redeem Hydrate");
         assert_eq!(out[0]["data"]["subscriber"], "unknown");
+        // The shared alert, beside the platform's data
+        assert_eq!(out[0]["alert"]["kind"], "redeem");
+        assert_eq!(out[0]["alert"]["title"], "Hydrate");
+        assert_eq!(out[0]["alert"]["user"], "viewer1");
+        assert_eq!(out[0]["alert"]["channel"], "mortygotvr");
         assert_eq!(out[1]["type"], "moderation");
         assert_eq!(out[1]["payload"]["trigger"], "Twitch mortygotvr redeem Hydrate");
         assert_eq!(out[1]["payload"]["platform"], "twitch");
