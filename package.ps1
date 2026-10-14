@@ -3,7 +3,7 @@
 #   theater-reader\data        its icon
 # People extract it into C:\ProgramData\obs-studio\plugins.
 # Build first: cargo build --release (and Theater Scene's Trust\build_trust_qt.ps1 for the shim)
-param([string]$Version = "0.1.0", [string]$QtShim = "$PSScriptRoot\..\theater scene(rust)\Trust\target\release\trust_qt.dll")
+param([string]$Version = "0.2.0", [string]$QtShim = "$PSScriptRoot\..\theater scene(rust)\Trust\target\release\trust_qt.dll")
 $ErrorActionPreference = 'Stop'
 
 $work = "$PSScriptRoot\dist\stage"

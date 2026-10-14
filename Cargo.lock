@@ -2812,7 +2812,7 @@ dependencies = [
 
 [[package]]
 name = "theater_reader"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "base64 0.22.1",
  "crossbeam-channel",
@@ -2833,7 +2833,7 @@ dependencies = [
 
 [[package]]
 name = "theater_shared"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "crossbeam-channel",
  "egui",
